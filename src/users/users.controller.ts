@@ -1,12 +1,12 @@
 import {
   Body,
   Controller,
-  Delete,
   Get,
   Param,
   Patch,
   Post,
   UseGuards,
+  Request,
 } from '@nestjs/common';
 import { ApiBearerAuth } from '@nestjs/swagger';
 
@@ -18,7 +18,7 @@ import { UsersService } from './users.service';
 @Controller('user')
 @ApiBearerAuth()
 export class UsersController {
-  constructor(private readonly usersService: UsersService) {}
+  constructor(private readonly usersService: UsersService) { }
 
   @Post()
   @UseGuards(AuthGuard)
@@ -26,14 +26,21 @@ export class UsersController {
     return this.usersService.create(createUserDto);
   }
 
+  @UseGuards(AuthGuard)
+  @Patch('me')
+  updateMe(@Request() req, @Body() updateUserDto: UpdateUserDto) {
+    return this.usersService.update(req.user.sub, updateUserDto);
+  }
+
+  @UseGuards(AuthGuard)
   @Get(':id')
   findOne(@Param('id') id: string) {
-    return this.usersService.findOne(+id);
+    return this.usersService.findOne(id);
   }
 
+  @UseGuards(AuthGuard)
   @Patch(':id')
   update(@Param('id') id: string, @Body() updateUserDto: UpdateUserDto) {
-    return this.usersService.update(+id, updateUserDto);
+    return this.usersService.update(id, updateUserDto);
   }
-
 }
