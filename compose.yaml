@@ -1,0 +1,14 @@
+services:
+  db:
+    image: postgres:18.3-alpine3.23
+    environment:
+      POSTGRES_USER: ${POSTGRES_USER}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+      POSTGRES_DB: ${POSTGRES_DB}
+    ports:
+      - 5432:5432
+    volumes:
+      - nest-5IW1-20252026:/var/lib/postgresql/data
+
+volumes:
+  nest-5IW1-20252026:
