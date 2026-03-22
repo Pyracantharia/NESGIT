@@ -13,7 +13,7 @@ import { MessagesService } from './messages.service.js';
 })
 export class MessagesGateway {
   @WebSocketServer()
-  server: Server;
+  server!: Server;
 
   constructor(private readonly messagesService: MessagesService) { }
 

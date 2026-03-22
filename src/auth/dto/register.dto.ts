@@ -7,18 +7,18 @@ export class RegisterDto {
     example: 'test@example.com',
   })
   @IsEmail()
-  email: string;
+  email!: string;
 
   @ApiProperty({ description: 'The password of the user', example: 'password' })
   @IsString()
   @MinLength(8)
-  password: string;
+  password!: string;
 
   @ApiProperty({ description: 'The username of the user', example: 'testuser' })
   @IsString()
-  username: string;
+  username!: string;
 
   @ApiProperty({ description: 'The color of the user', example: '#ff0000' })
   @IsString()
-  color: string;
+  color!: string;
 }
