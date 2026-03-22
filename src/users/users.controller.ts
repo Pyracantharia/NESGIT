@@ -11,9 +11,9 @@ import {
 import { ApiBearerAuth } from '@nestjs/swagger';
 
 import { AuthGuard } from 'src/auth/auth.guard';
-import { CreateUserDto } from './dto/create-user.dto';
-import { UpdateUserDto } from './dto/update-user.dto';
-import { UsersService } from './users.service';
+import { CreateUserDto } from './dto/create-user.dto.js';
+import { UpdateUserDto } from './dto/update-user.dto.js';
+import { UsersService } from './users.service.js';
 
 @Controller('user')
 @ApiBearerAuth()
