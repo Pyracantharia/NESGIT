@@ -13,4 +13,12 @@ export class RegisterDto {
   @IsString()
   @MinLength(8)
   password: string;
+
+  @ApiProperty({ description: 'The username of the user', example: 'testuser' })
+  @IsString()
+  username: string;
+
+  @ApiProperty({ description: 'The color of the user', example: '#ff0000' })
+  @IsString()
+  color: string;
 }

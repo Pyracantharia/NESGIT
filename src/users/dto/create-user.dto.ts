@@ -20,4 +20,12 @@ export class CreateUserDto {
     },
   )
   password: string;
+  @ApiProperty({ description: 'The username of the user', example: 'testuser' })
+  @IsString()
+  @MinLength(3)
+  username: string;
+
+  @ApiProperty({ description: 'The color of the user', example: '#ff0000' })
+  @IsString()
+  color: string;
 }
