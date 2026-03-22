@@ -4,9 +4,9 @@ import { JwtModule, JwtService } from '@nestjs/jwt';
 import { ScheduleModule } from '@nestjs/schedule';
 import 'dotenv/config';
 
-import { AuthModule } from './auth/auth.module';
-import { UsersModule } from './users/users.module';
-import { MessagesGateway } from './messages/messages.gateway';
+import { AuthModule } from './auth/auth.module.js';
+import { UsersModule } from './users/users.module.js';
+import { MessagesModule } from './messages/messages.module.js';
 
 @Module({
   imports: [
@@ -23,7 +23,8 @@ import { MessagesGateway } from './messages/messages.gateway';
     UsersModule,
     AuthModule,
     ScheduleModule.forRoot(),
+    MessagesModule,
   ],
-  providers: [JwtService, MessagesGateway],
+  providers: [JwtService],
 })
 export class AppModule {}
