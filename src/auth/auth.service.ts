@@ -1,6 +1,8 @@
-import { Injectable, UnauthorizedException } from '@nestjs/common';
+import { Injectable, UnauthorizedException, BadRequestException } from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
 import * as bcrypt from 'bcrypt';
+import { AuthResponse } from './dto/auth-response.dto.js';
+
 
 import { UsersService } from '../users/users.service.js';
 
@@ -9,12 +11,12 @@ export class AuthService {
   constructor(
     private usersService: UsersService,
     private jwtService: JwtService,
-  ) {}
+  ) { }
 
-  async signIn(email: string, pass: string): Promise<any> {
+  async signIn(email: string, password: string): Promise<AuthResponse> {
     const user = await this.usersService.findOneByEmail(email);
 
-    if (!user || !(await bcrypt.compare(pass, user.password))) {
+    if (!user || !(await bcrypt.compare(password, user.password))) {
       throw new UnauthorizedException();
     }
 
@@ -25,18 +27,35 @@ export class AuthService {
     };
   }
 
-  async register(email: string, password: string, username: string, color: string): Promise<any> {
+  async register(
+    email: string,
+    password: string,
+    username: string,
+    color: string,
+  ): Promise<AuthResponse> {
+    await this.ensureEmailNotExists(email);
+
+    const hashedPassword = await bcrypt.hash(password, 10);
     const user = await this.usersService.create({
       email,
-      password: await bcrypt.hash(password, 10),
+      password: hashedPassword,
       username,
       color,
     });
 
-    const payload = { sub: user.id, email: user.email };
+    return this.generateToken(user.id, user.email);
+  }
 
-    return {
-      access_token: await this.jwtService.signAsync(payload),
-    };
+  private async ensureEmailNotExists(email: string): Promise<void> {
+    const existingUser = await this.usersService.findOneByEmail(email);
+    if (existingUser) {
+      throw new BadRequestException('Email already registered');
+    }
+  }
+
+  private async generateToken(userId: string, email: string): Promise<AuthResponse> {
+    const payload = { sub: userId, email };
+    const access_token = await this.jwtService.signAsync(payload);
+    return { access_token };
   }
 }
