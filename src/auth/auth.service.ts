@@ -1,17 +1,20 @@
-import { Injectable, UnauthorizedException, BadRequestException } from '@nestjs/common';
-import { JwtService } from '@nestjs/jwt';
-import * as bcrypt from 'bcrypt';
-import { AuthResponse } from './dto/auth-response.dto.js';
+import {
+  Injectable,
+  UnauthorizedException,
+  BadRequestException,
+} from "@nestjs/common";
+import { JwtService } from "@nestjs/jwt";
+import * as bcrypt from "bcrypt";
+import { AuthResponse } from "./dto/auth-response.dto.js";
 
-
-import { UsersService } from '../users/users.service.js';
+import { UsersService } from "../users/users.service.js";
 
 @Injectable()
 export class AuthService {
   constructor(
     private usersService: UsersService,
     private jwtService: JwtService,
-  ) { }
+  ) {}
 
   async signIn(email: string, password: string): Promise<AuthResponse> {
     const user = await this.usersService.findOneByEmail(email);
@@ -49,11 +52,14 @@ export class AuthService {
   private async ensureEmailNotExists(email: string): Promise<void> {
     const existingUser = await this.usersService.findOneByEmail(email);
     if (existingUser) {
-      throw new BadRequestException('Email already registered');
+      throw new BadRequestException("Email already registered");
     }
   }
 
-  private async generateToken(userId: string, email: string): Promise<AuthResponse> {
+  private async generateToken(
+    userId: string,
+    email: string,
+  ): Promise<AuthResponse> {
     const payload = { sub: userId, email };
     const access_token = await this.jwtService.signAsync(payload);
     return { access_token };

@@ -7,18 +7,18 @@ import {
   Post,
   UseGuards,
   Request,
-} from '@nestjs/common';
-import { ApiBearerAuth } from '@nestjs/swagger';
+} from "@nestjs/common";
+import { ApiBearerAuth } from "@nestjs/swagger";
 
-import { AuthGuard } from '../auth/auth.guard.js';
-import { CreateUserDto } from './dto/create-user.dto.js';
-import { UpdateUserDto } from './dto/update-user.dto.js';
-import { UsersService } from './users.service.js';
+import { AuthGuard } from "../auth/auth.guard.js";
+import { CreateUserDto } from "./dto/create-user.dto.js";
+import { UpdateUserDto } from "./dto/update-user.dto.js";
+import { UsersService } from "./users.service.js";
 
-@Controller('user')
+@Controller("user")
 @ApiBearerAuth()
 export class UsersController {
-  constructor(private readonly usersService: UsersService) { }
+  constructor(private readonly usersService: UsersService) {}
 
   @Post()
   @UseGuards(AuthGuard)
@@ -27,20 +27,20 @@ export class UsersController {
   }
 
   @UseGuards(AuthGuard)
-  @Patch('me')
+  @Patch("me")
   updateMe(@Request() req, @Body() updateUserDto: UpdateUserDto) {
     return this.usersService.update(req.user.sub, updateUserDto);
   }
 
   @UseGuards(AuthGuard)
-  @Get(':id')
-  findOne(@Param('id') id: string) {
+  @Get(":id")
+  findOne(@Param("id") id: string) {
     return this.usersService.findOne(id);
   }
 
   @UseGuards(AuthGuard)
-  @Patch(':id')
-  update(@Param('id') id: string, @Body() updateUserDto: UpdateUserDto) {
+  @Patch(":id")
+  update(@Param("id") id: string, @Body() updateUserDto: UpdateUserDto) {
     return this.usersService.update(id, updateUserDto);
   }
 }
