@@ -19,11 +19,12 @@ export class MessagesGateway {
 
   @SubscribeMessage('sendMessage')
   async handleMessage(
-    @MessageBody() data: { content: string; userId: string },
+    @MessageBody() data: { content: string; userId: string; roomId: number },
     @ConnectedSocket() client: Socket,
   ) {
-    const message = await this.messagesService.createMessage(data.userId, data.content);
-    this.server.emit('newMessage', message);
+    const message = await this.messagesService.createMessage(data.userId, data.content, data.roomId);
+
+    this.server.to(`room_${data.roomId}`).emit('newMessage', message);
   }
 
   @SubscribeMessage('findAllMessages')
