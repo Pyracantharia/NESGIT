@@ -1,7 +1,7 @@
 const API_URL = 'http://localhost:3000';
 
 const loginData = {
-    email: 'test@test.fr',
+    email: 'testESGI@example.com',
     password: 'Password123!',
 };
 
