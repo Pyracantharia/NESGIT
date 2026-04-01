@@ -4,30 +4,34 @@ import {
   WebSocketServer,
   MessageBody,
   ConnectedSocket,
-} from '@nestjs/websockets';
-import { Server, Socket } from 'socket.io';
-import { MessagesService } from './messages.service.js';
+} from "@nestjs/websockets";
+import { Server, Socket } from "socket.io";
+import { MessagesService } from "./messages.service.js";
 
 @WebSocketGateway({
-  cors: { origin: '*' },
+  cors: { origin: "*" },
 })
 export class MessagesGateway {
   @WebSocketServer()
   server!: Server;
 
-  constructor(private readonly messagesService: MessagesService) { }
+  constructor(private readonly messagesService: MessagesService) {}
 
-  @SubscribeMessage('sendMessage')
+  @SubscribeMessage("sendMessage")
   async handleMessage(
     @MessageBody() data: { content: string; userId: string; roomId: number },
     @ConnectedSocket() client: Socket,
   ) {
-    const message = await this.messagesService.createMessage(data.userId, data.content, data.roomId);
+    const message = await this.messagesService.createMessage(
+      data.userId,
+      data.content,
+      data.roomId,
+    );
 
-    this.server.to(`room_${data.roomId}`).emit('newMessage', message);
+    this.server.to(`room_${data.roomId}`).emit("newMessage", message);
   }
 
-  @SubscribeMessage('findAllMessages')
+  @SubscribeMessage("findAllMessages")
   async findAll() {
     const messages = await this.messagesService.findAll();
     return messages;
