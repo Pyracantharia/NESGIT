@@ -51,3 +51,23 @@ export type User = Prisma.UserModel
  * 
  */
 export type Message = Prisma.MessageModel
+/**
+ * Model Tag
+ * 
+ */
+export type Tag = Prisma.TagModel
+/**
+ * Model Room
+ * 
+ */
+export type Room = Prisma.RoomModel
+/**
+ * Model RoomParticipant
+ * 
+ */
+export type RoomParticipant = Prisma.RoomParticipantModel
+/**
+ * Model Profile
+ * 
+ */
+export type Profile = Prisma.ProfileModel

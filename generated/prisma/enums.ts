@@ -9,7 +9,11 @@
 * 🟢 You can import this file directly.
 */
 
+export const EnumTag = {
+  LIKE: 'LIKE',
+  DISLIKE: 'DISLIKE',
+  LOVE: 'LOVE',
+  LAUGH: 'LAUGH'
+} as const
 
-
-// This file is empty because there are no enums in the schema.
-export {}
+export type EnumTag = (typeof EnumTag)[keyof typeof EnumTag]

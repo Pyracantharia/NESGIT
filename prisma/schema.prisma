@@ -8,14 +8,18 @@ datasource db {
 }
 
 model User {
-  id        String    @id @default(uuid())
-  email     String    @unique
-  username  String    @unique
-  password  String
-  color     String    @unique
-  createdAt DateTime  @default(now())
-  updatedAt DateTime  @updatedAt
-  messages  Message[]
+  id         String            @id @default(uuid())
+  email      String            @unique
+  username   String            @unique
+  password   String
+  color      String            @unique
+  createdAt  DateTime          @default(now())
+  updatedAt  DateTime          @updatedAt
+  messages   Message[]
+  profile    Profile?
+  reactions  Tag[]
+  ownedRooms Room[]            @relation("RoomAuthor")
+  rooms      RoomParticipant[]
 }
 
 model Message {
@@ -24,4 +28,51 @@ model Message {
   createdAt DateTime @default(now())
   userId    String
   user      User     @relation(fields: [userId], references: [id])
+  roomId    Int
+  room      Room     @relation(fields: [roomId], references: [id])
+  reactions Tag[]
+}
+
+model Tag {
+  id   Int     @id @default(autoincrement())
+  type EnumTag
+  userId String
+  user   User   @relation(fields: [userId], references: [id])
+  messageId Int
+  message   Message @relation(fields: [messageId], references: [id])
+}
+
+model Room {
+  id           Int               @id @default(autoincrement())
+  name         String?
+  createdAt    DateTime          @default(now())
+  authorId     String
+  author       User              @relation("RoomAuthor", fields: [authorId], references: [id])
+  participants RoomParticipant[]
+  messages     Message[]
+}
+
+model RoomParticipant {
+  id            Int      @id @default(autoincrement())
+  userId        String
+  roomId        Int
+  user          User     @relation(fields: [userId], references: [id])
+  room          Room     @relation(fields: [roomId], references: [id])
+  joinedAt      DateTime @default(now())
+  canSeeHistory Boolean  @default(true)
+  @@unique([userId, roomId])
+}
+
+model Profile {
+  id     Int     @id @default(autoincrement())
+  bio    String?
+  userId String  @unique
+  user   User    @relation(fields: [userId], references: [id])
+}
+
+enum EnumTag {
+  LIKE
+  DISLIKE
+  LOVE
+  LAUGH
 }
