@@ -3,7 +3,7 @@ const API_URL = 'http://localhost:3000';
 async function register() {
     // Données fixes pour le test
     const userData = {
-        email: `test${Date.now()}@example.com`, // Email unique avec timestamp
+        email: `testESGI@example.com`,
         password: 'Password123!',
         username: 'TestUser',
         color: '#FF5733',

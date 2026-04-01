@@ -3,7 +3,7 @@ import io from 'socket.io-client';
 const WS_URL = 'http://localhost:3000';
 
 const messageData = {
-    userId: 'ff6aa158-18ff-4a76-9a52-387613ba8d25', // a remplacer par l'id trouver pendant le login , puis converti sur jwt.io en sub
+    userId: '566ca868-5ea3-4b5f-b22f-c3da94633217', // a remplacer par l'id trouver pendant le login , puis converti sur jwt.io en sub
     content: 'Test Message',
 };
 
