@@ -33,6 +33,29 @@ export class RoomsService {
     });
   }
 
+  async ensureParticipant(
+    roomId: number,
+    userId: string,
+    canSeeHistory: boolean = true,
+  ) {
+    return this.prisma.roomParticipant.upsert({
+      where: {
+        userId_roomId: {
+          userId,
+          roomId,
+        },
+      },
+      update: {
+        canSeeHistory,
+      },
+      create: {
+        roomId,
+        userId,
+        canSeeHistory,
+      },
+    });
+  }
+
   async findUserRooms(userId: string) {
     return this.prisma.room.findMany({
       where: {
@@ -42,6 +65,21 @@ export class RoomsService {
       },
       include: {
         author: true,
+      },
+      orderBy: {
+        createdAt: "desc",
+      },
+    });
+  }
+
+  async findAllRooms() {
+    return this.prisma.room.findMany({
+      include: {
+        author: true,
+        participants: true,
+      },
+      orderBy: {
+        createdAt: "desc",
       },
     });
   }

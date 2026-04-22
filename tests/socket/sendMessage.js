@@ -1,18 +1,29 @@
 import io from "socket.io-client";
 
 const WS_URL = "http://localhost:3000";
+const ROOM_ID = Number(process.env.ROOM_ID ?? "1");
+const USER_ID =
+  process.env.USER_ID ?? "a4faf605-76d0-4f45-ae04-4ed6ac9170ff";
 
 const messageData = {
-  userId: "566ca868-5ea3-4b5f-b22f-c3da94633217", // a remplacer par l'id trouver pendant le login , puis converti sur jwt.io en sub
+  userId: USER_ID,
   content: "Test Message",
+  roomId: ROOM_ID,
 };
 
 function sendMessage() {
   const socket = io(WS_URL);
 
   socket.on("connect", () => {
-    socket.emit("sendMessage", messageData);
-    console.log("Message envoyé:", messageData);
+    socket.emit(
+      "joinRoom",
+      { roomId: ROOM_ID, userId: USER_ID },
+      (joinResponse) => {
+        console.log("Join room response:", joinResponse);
+        socket.emit("sendMessage", messageData);
+        console.log("Message envoyé:", messageData);
+      },
+    );
   });
 
   socket.on("newMessage", (message) => {

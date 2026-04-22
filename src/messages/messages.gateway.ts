@@ -29,11 +29,17 @@ export class MessagesGateway {
     );
 
     this.server.to(`room_${data.roomId}`).emit("newMessage", message);
+    return message;
   }
 
   @SubscribeMessage("findAllMessages")
   async findAll() {
     const messages = await this.messagesService.findAll();
     return messages;
+  }
+
+  @SubscribeMessage("findMessagesByRoom")
+  async findMessagesByRoom(@MessageBody() data: { roomId: number }) {
+    return this.messagesService.findAllByRoom(data.roomId);
   }
 }

@@ -32,9 +32,15 @@ export class RoomsGateway {
     @MessageBody() data: { roomId: number; userId: string },
     @ConnectedSocket() client: Socket,
   ) {
-    // Note: Dans une vraie app, on vérifierait ici si l'user est participant en DB
+    await this.roomsService.ensureParticipant(data.roomId, data.userId, true);
     client.join(`room_${data.roomId}`);
     return { status: "joined", roomId: data.roomId };
+  }
+
+  @SubscribeMessage("listRooms")
+  async handleListRooms() {
+    const rooms = await this.roomsService.findAllRooms();
+    return rooms;
   }
 
   // Gestion du "En train d'écrire" (Requirement TP)
@@ -49,5 +55,6 @@ export class RoomsGateway {
       username: data.username,
       isTyping: data.isTyping,
     });
+    return { status: "typing-sent" };
   }
 }

@@ -7,6 +7,7 @@ import "dotenv/config";
 import { AuthModule } from "./auth/auth.module.js";
 import { UsersModule } from "./users/users.module.js";
 import { MessagesModule } from "./messages/messages.module.js";
+import { RoomsModule } from "./rooms/rooms.module.js";
 
 @Module({
   imports: [
@@ -24,6 +25,7 @@ import { MessagesModule } from "./messages/messages.module.js";
     AuthModule,
     ScheduleModule.forRoot(),
     MessagesModule,
+    RoomsModule,
   ],
   providers: [JwtService],
 })
