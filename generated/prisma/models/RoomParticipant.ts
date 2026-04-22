@@ -196,7 +196,7 @@ export type RoomParticipantGroupByOutputType = {
   _max: RoomParticipantMaxAggregateOutputType | null
 }
 
-type GetRoomParticipantGroupByPayload<T extends RoomParticipantGroupByArgs> = Prisma.PrismaPromise<
+export type GetRoomParticipantGroupByPayload<T extends RoomParticipantGroupByArgs> = Prisma.PrismaPromise<
   Array<
     Prisma.PickEnumerable<RoomParticipantGroupByOutputType, T['by']> &
       {
@@ -1295,6 +1295,11 @@ export type RoomParticipantFindManyArgs<ExtArgs extends runtime.Types.Extensions
    * Skip the first `n` RoomParticipants.
    */
   skip?: number
+  /**
+   * {@link https://www.prisma.io/docs/concepts/components/prisma-client/distinct Distinct Docs}
+   * 
+   * Filter by unique combinations of RoomParticipants.
+   */
   distinct?: Prisma.RoomParticipantScalarFieldEnum | Prisma.RoomParticipantScalarFieldEnum[]
 }
 

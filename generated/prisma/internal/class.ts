@@ -17,8 +17,8 @@ import type * as Prisma from "./prismaNamespace.js"
 
 const config: runtime.GetPrismaClientConfig = {
   "previewFeatures": [],
-  "clientVersion": "7.4.2",
-  "engineVersion": "94a226be1cf2967af2541cca5529f0f7ba866919",
+  "clientVersion": "7.8.0",
+  "engineVersion": "3c6e192761c0362d496ed980de936e2f3cebcd3a",
   "activeProvider": "postgresql",
   "inlineSchema": "generator client {\n  provider = \"prisma-client\"\n  output   = \"../generated/prisma\"\n}\n\ndatasource db {\n  provider = \"postgresql\"\n}\n\nmodel User {\n  id         String            @id @default(uuid())\n  email      String            @unique\n  username   String            @unique\n  password   String\n  color      String            @unique\n  createdAt  DateTime          @default(now())\n  updatedAt  DateTime          @updatedAt\n  messages   Message[]\n  profile    Profile?\n  reactions  Tag[]\n  ownedRooms Room[]            @relation(\"RoomAuthor\")\n  rooms      RoomParticipant[]\n}\n\nmodel Message {\n  id        Int      @id @default(autoincrement())\n  content   String\n  createdAt DateTime @default(now())\n  userId    String\n  user      User     @relation(fields: [userId], references: [id])\n  roomId    Int\n  room      Room     @relation(fields: [roomId], references: [id])\n  reactions Tag[]\n}\n\nmodel Tag {\n  id        Int     @id @default(autoincrement())\n  type      EnumTag\n  userId    String\n  user      User    @relation(fields: [userId], references: [id])\n  messageId Int\n  message   Message @relation(fields: [messageId], references: [id])\n}\n\nmodel Room {\n  id           Int               @id @default(autoincrement())\n  name         String?\n  createdAt    DateTime          @default(now())\n  authorId     String\n  author       User              @relation(\"RoomAuthor\", fields: [authorId], references: [id])\n  participants RoomParticipant[]\n  messages     Message[]\n}\n\nmodel RoomParticipant {\n  id            Int      @id @default(autoincrement())\n  userId        String\n  roomId        Int\n  user          User     @relation(fields: [userId], references: [id])\n  room          Room     @relation(fields: [roomId], references: [id])\n  joinedAt      DateTime @default(now())\n  canSeeHistory Boolean  @default(true)\n\n  @@unique([userId, roomId])\n}\n\nmodel Profile {\n  id     Int     @id @default(autoincrement())\n  bio    String?\n  userId String  @unique\n  user   User    @relation(fields: [userId], references: [id])\n}\n\nenum EnumTag {\n  LIKE\n  DISLIKE\n  LOVE\n  LAUGH\n}\n",
   "runtimeDataModel": {
@@ -180,7 +180,7 @@ export interface PrismaClient<
    * 
    * Read more in our [docs](https://www.prisma.io/docs/orm/prisma-client/queries/transactions).
    */
-  $transaction<P extends Prisma.PrismaPromise<any>[]>(arg: [...P], options?: { isolationLevel?: Prisma.TransactionIsolationLevel }): runtime.Types.Utils.JsPromise<runtime.Types.Utils.UnwrapTuple<P>>
+  $transaction<P extends Prisma.PrismaPromise<any>[]>(arg: [...P], options?: { maxWait?: number, timeout?: number, isolationLevel?: Prisma.TransactionIsolationLevel }): runtime.Types.Utils.JsPromise<runtime.Types.Utils.UnwrapTuple<P>>
 
   $transaction<R>(fn: (prisma: Omit<PrismaClient, runtime.ITXClientDenyList>) => runtime.Types.Utils.JsPromise<R>, options?: { maxWait?: number, timeout?: number, isolationLevel?: Prisma.TransactionIsolationLevel }): runtime.Types.Utils.JsPromise<R>
 
