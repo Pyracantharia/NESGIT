@@ -1,12 +1,24 @@
 body {
   margin: 0;
-  background: #f4f7fb;
-  color: #212529;
+  background: #0f172a;
+  color: #e2e8f0;
   font-family: Inter, "Segoe UI", Roboto, Arial, sans-serif;
 }
 
 #root {
   min-height: 100vh;
+}
+
+:root {
+  --bs-body-bg: #0f172a;
+  --bs-body-color: #e2e8f0;
+  --bs-secondary-bg: #1e293b;
+  --bs-tertiary-bg: #111827;
+  --bs-border-color: #334155;
+  --bs-card-bg: #111827;
+  --bs-card-color: #e2e8f0;
+  --bs-light-rgb: 30, 41, 59;
+  --bs-dark-rgb: 2, 6, 23;
 }
 
 .auth-page {
@@ -15,4 +27,62 @@ body {
   align-items: center;
   justify-content: center;
   padding: 1rem 0;
+}
+
+.room-list-scroll {
+  max-height: 55vh;
+  overflow-y: auto;
+}
+
+.chat-window-body {
+  min-height: 420px;
+  max-height: 60vh;
+  overflow-y: auto;
+  background: #0b1220;
+}
+
+.card,
+.list-group-item,
+.form-control,
+.form-select,
+.input-group-text {
+  background-color: #111827;
+  color: #e2e8f0;
+  border-color: #334155;
+}
+
+.card-header,
+.card-header.bg-white {
+  background-color: #0b1220 !important;
+  color: #e2e8f0;
+  border-color: #334155;
+}
+
+.form-control::placeholder {
+  color: #94a3b8;
+}
+
+.form-control:focus {
+  background-color: #0b1220;
+  color: #e2e8f0;
+  border-color: #3b82f6;
+  box-shadow: 0 0 0 0.2rem rgba(59, 130, 246, 0.2);
+}
+
+.list-group-item.text-muted,
+.text-muted {
+  color: #94a3b8 !important;
+}
+
+.list-group-item.active,
+.list-group-item-action.active {
+  background-color: #1d4ed8;
+  border-color: #1d4ed8;
+  color: #eff6ff;
+}
+
+.list-group-item-action:hover,
+.list-group-item-action:focus {
+  background-color: #1f2937;
+  color: #e2e8f0;
 }

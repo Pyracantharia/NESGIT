@@ -12,6 +12,9 @@ export class MessagesService {
         userId,
         roomId,
       },
+      include: {
+        user: true,
+      },
     });
     return message;
   }
