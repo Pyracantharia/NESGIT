@@ -1,15 +1,27 @@
 import { useState } from "react";
 
-export default function RoomList({ rooms, activeRoomId, onRefresh, onCreate, onJoin, loading }) {
+export default function RoomList({
+  rooms,
+  activeRoomId,
+  onRefresh,
+  onCreate,
+  onJoin,
+  onInvite,
+  loading,
+}) {
   const [newRoomName, setNewRoomName] = useState("");
+  const [newRoomPrivate, setNewRoomPrivate] = useState(false);
   const [joinRoomId, setJoinRoomId] = useState("");
+  const [inviteUsername, setInviteUsername] = useState("");
+  const [inviteCanSeeHistory, setInviteCanSeeHistory] = useState(true);
 
   async function handleCreate(event) {
     event.preventDefault();
     const name = newRoomName.trim();
     if (!name) return;
-    await onCreate(name);
+    await onCreate({ name, isPrivate: newRoomPrivate });
     setNewRoomName("");
+    setNewRoomPrivate(false);
   }
 
   async function handleJoin(event) {
@@ -18,6 +30,18 @@ export default function RoomList({ rooms, activeRoomId, onRefresh, onCreate, onJ
     if (Number.isNaN(parsed)) return;
     await onJoin(parsed);
     setJoinRoomId("");
+  }
+
+  async function handleInvite(event) {
+    event.preventDefault();
+    const username = inviteUsername.trim();
+    if (!username || !activeRoomId || !onInvite) return;
+    await onInvite({
+      roomId: Number(activeRoomId),
+      username,
+      canSeeHistory: inviteCanSeeHistory,
+    });
+    setInviteUsername("");
   }
 
   return (
@@ -48,6 +72,18 @@ export default function RoomList({ rooms, activeRoomId, onRefresh, onCreate, onJ
               Create
             </button>
           </div>
+          <div className="form-check mt-2">
+            <input
+              id="roomPrivateFlag"
+              type="checkbox"
+              className="form-check-input"
+              checked={newRoomPrivate}
+              onChange={(event) => setNewRoomPrivate(event.target.checked)}
+            />
+            <label className="form-check-label" htmlFor="roomPrivateFlag">
+              Private room
+            </label>
+          </div>
         </form>
 
         <form className="mb-3" onSubmit={handleJoin}>
@@ -62,6 +98,35 @@ export default function RoomList({ rooms, activeRoomId, onRefresh, onCreate, onJ
             <button className="btn btn-outline-primary" type="submit">
               Join
             </button>
+          </div>
+        </form>
+
+        <form className="mb-3" onSubmit={handleInvite}>
+          <label className="form-label">Invite user to active room</label>
+          <div className="input-group mb-2">
+            <input
+              className="form-control"
+              placeholder="Username"
+              value={inviteUsername}
+              onChange={(event) => setInviteUsername(event.target.value)}
+              disabled={!activeRoomId}
+            />
+            <button className="btn btn-outline-success" type="submit" disabled={!activeRoomId}>
+              Invite
+            </button>
+          </div>
+          <div className="form-check">
+            <input
+              id="inviteHistoryAccess"
+              type="checkbox"
+              className="form-check-input"
+              checked={inviteCanSeeHistory}
+              onChange={(event) => setInviteCanSeeHistory(event.target.checked)}
+              disabled={!activeRoomId}
+            />
+            <label className="form-check-label" htmlFor="inviteHistoryAccess">
+              Can see previous messages
+            </label>
           </div>
         </form>
 
@@ -80,7 +145,10 @@ export default function RoomList({ rooms, activeRoomId, onRefresh, onCreate, onJ
                   }`}
                   onClick={() => onJoin(room.id)}
                 >
-                  <span className="text-truncate me-2">{room.name || `Room ${room.id}`}</span>
+                  <span className="text-truncate me-2">
+                    {room.name || `Room ${room.id}`}
+                    {room.isPrivate ? " (Private)" : ""}
+                  </span>
                   <span>#{room.id}</span>
                 </button>
               );

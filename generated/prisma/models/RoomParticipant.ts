@@ -456,10 +456,6 @@ export type RoomParticipantUncheckedUpdateManyWithoutRoomNestedInput = {
   deleteMany?: Prisma.RoomParticipantScalarWhereInput | Prisma.RoomParticipantScalarWhereInput[]
 }
 
-export type BoolFieldUpdateOperationsInput = {
-  set?: boolean
-}
-
 export type RoomParticipantCreateWithoutUserInput = {
   joinedAt?: Date | string
   canSeeHistory?: boolean

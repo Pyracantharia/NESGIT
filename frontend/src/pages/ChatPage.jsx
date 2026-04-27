@@ -73,6 +73,16 @@ export default function ChatPage() {
       const authorName = message.user?.username || message.user?.email;
       clearTypingForUsername(authorName);
     });
+    socketInstance.on("messageUpdated", (updatedMessage) => {
+      if (!updatedMessage) return;
+      const roomId = Number(updatedMessage.roomId);
+      setMessagesByRoom((prev) => ({
+        ...prev,
+        [roomId]: (prev[roomId] || []).map((message) =>
+          Number(message.id) === Number(updatedMessage.id) ? updatedMessage : message,
+        ),
+      }));
+    });
 
     socketInstance.on("userTyping", (event) => onTypingEventRef.current(event));
     socketInstance.on("typingSnapshot", (payload) => {
@@ -94,7 +104,9 @@ export default function ChatPage() {
     if (!currentSocket || !currentSocket.connected) return false;
     setLoadingRooms(true);
     try {
-      const result = await emitWithAck(currentSocket, "listRooms", {});
+      const result = await emitWithAck(currentSocket, "listRooms", {
+        userId: userClaims?.sub,
+      });
       setRooms(Array.isArray(result) ? result : []);
       setError("");
       return true;
@@ -123,13 +135,14 @@ export default function ChatPage() {
     }, 1000);
   }
 
-  async function createRoom(name) {
+  async function createRoom(payload) {
     const currentSocket = socketRef.current;
     if (!currentSocket || !currentSocket.connected || !userClaims?.sub) return;
     try {
       const room = await emitWithAck(currentSocket, "createRoom", {
-        name,
+        name: payload.name,
         authorId: userClaims.sub,
+        isPrivate: Boolean(payload.isPrivate),
       });
       setActiveRoomId(room.id);
       await refreshRooms();
@@ -148,7 +161,10 @@ export default function ChatPage() {
         userId: userClaims.sub,
       });
       setActiveRoomId(roomId);
-      const history = await emitWithAck(currentSocket, "findMessagesByRoom", { roomId });
+      const history = await emitWithAck(currentSocket, "findMessagesByRoom", {
+        roomId,
+        userId: userClaims.sub,
+      });
       setMessagesByRoom((prev) => ({ ...prev, [roomId]: Array.isArray(history) ? history : [] }));
     } catch (err) {
       setError(err.message);
@@ -165,6 +181,47 @@ export default function ChatPage() {
         content,
         userId: userClaims.sub,
         roomId: activeRoomId,
+      });
+    } catch (err) {
+      setError(err.message);
+    }
+  }
+
+  async function inviteToRoom(payload) {
+    const currentSocket = socketRef.current;
+    if (!currentSocket || !currentSocket.connected) return;
+    try {
+      await emitWithAck(currentSocket, "inviteToRoom", payload);
+      await refreshRooms();
+    } catch (err) {
+      setError(err.message);
+    }
+  }
+
+  async function addReaction(messageId, type) {
+    const currentSocket = socketRef.current;
+    if (!currentSocket || !currentSocket.connected || !userClaims?.sub || !activeRoomId) return;
+    try {
+      await emitWithAck(currentSocket, "addReaction", {
+        messageId,
+        roomId: activeRoomId,
+        userId: userClaims.sub,
+        type,
+      });
+    } catch (err) {
+      setError(err.message);
+    }
+  }
+
+  async function removeReaction(messageId, type) {
+    const currentSocket = socketRef.current;
+    if (!currentSocket || !currentSocket.connected || !userClaims?.sub || !activeRoomId) return;
+    try {
+      await emitWithAck(currentSocket, "removeReaction", {
+        messageId,
+        roomId: activeRoomId,
+        userId: userClaims.sub,
+        type,
       });
     } catch (err) {
       setError(err.message);
@@ -195,6 +252,7 @@ export default function ChatPage() {
               onRefresh={() => refreshRooms()}
               onCreate={createRoom}
               onJoin={joinRoom}
+              onInvite={inviteToRoom}
               loading={loadingRooms || !isConnected}
             />
           </div>
@@ -206,6 +264,9 @@ export default function ChatPage() {
               typingText={typingText}
               onSend={sendMessage}
               onTypingChange={setTyping}
+              onAddReaction={addReaction}
+              onRemoveReaction={removeReaction}
+              currentUserId={userClaims?.sub}
             />
           </div>
         </div>

@@ -8,7 +8,18 @@ export default function ChatWindow({
   typingText,
   onSend,
   onTypingChange,
+  onAddReaction,
+  onRemoveReaction,
+  currentUserId,
 }) {
+  const reactionOrder = ["LIKE", "LOVE", "LAUGH", "DISLIKE"];
+  const reactionLabelByType = {
+    LIKE: "👍 Like",
+    LOVE: "❤️ Love",
+    LAUGH: "😂 Laugh",
+    DISLIKE: "👎 Dislike",
+  };
+
   function formatTime(value) {
     if (!value) return "";
     try {
@@ -43,6 +54,40 @@ export default function ChatWindow({
                     <span>{formatTime(message.createdAt)}</span>
                   </div>
                   <div>{message.content}</div>
+                  <div className="d-flex flex-wrap gap-2 mt-2">
+                    {reactionOrder.map((reactionType) => {
+                      const reactions = (message.reactions || []).filter(
+                        (reaction) => reaction.type === reactionType,
+                      );
+                      const hasReacted = reactions.some(
+                        (reaction) => reaction.userId === currentUserId,
+                      );
+                      const names = reactions
+                        .map(
+                          (reaction) =>
+                            reaction.user?.username || reaction.user?.id || reaction.userId,
+                        )
+                        .join(", ");
+                      const count = reactions.length;
+                      const title = names || `No ${reactionLabelByType[reactionType].toLowerCase()} yet`;
+
+                      return (
+                        <button
+                          key={`${message.id}_${reactionType}`}
+                          type="button"
+                          className={`btn btn-sm ${hasReacted ? "btn-primary" : "btn-outline-secondary"}`}
+                          title={title}
+                          onClick={() =>
+                            hasReacted
+                              ? onRemoveReaction?.(message.id, reactionType)
+                              : onAddReaction?.(message.id, reactionType)
+                          }
+                        >
+                          {reactionLabelByType[reactionType]} ({count})
+                        </button>
+                      );
+                    })}
+                  </div>
                 </div>
               ))}
             </div>

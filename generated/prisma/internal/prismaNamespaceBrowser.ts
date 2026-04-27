@@ -112,6 +112,7 @@ export type TagScalarFieldEnum = (typeof TagScalarFieldEnum)[keyof typeof TagSca
 export const RoomScalarFieldEnum = {
   id: 'id',
   name: 'name',
+  isPrivate: 'isPrivate',
   createdAt: 'createdAt',
   authorId: 'authorId'
 } as const

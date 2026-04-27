@@ -37,6 +37,7 @@ export type RoomSumAggregateOutputType = {
 export type RoomMinAggregateOutputType = {
   id: number | null
   name: string | null
+  isPrivate: boolean | null
   createdAt: Date | null
   authorId: string | null
 }
@@ -44,6 +45,7 @@ export type RoomMinAggregateOutputType = {
 export type RoomMaxAggregateOutputType = {
   id: number | null
   name: string | null
+  isPrivate: boolean | null
   createdAt: Date | null
   authorId: string | null
 }
@@ -51,6 +53,7 @@ export type RoomMaxAggregateOutputType = {
 export type RoomCountAggregateOutputType = {
   id: number
   name: number
+  isPrivate: number
   createdAt: number
   authorId: number
   _all: number
@@ -68,6 +71,7 @@ export type RoomSumAggregateInputType = {
 export type RoomMinAggregateInputType = {
   id?: true
   name?: true
+  isPrivate?: true
   createdAt?: true
   authorId?: true
 }
@@ -75,6 +79,7 @@ export type RoomMinAggregateInputType = {
 export type RoomMaxAggregateInputType = {
   id?: true
   name?: true
+  isPrivate?: true
   createdAt?: true
   authorId?: true
 }
@@ -82,6 +87,7 @@ export type RoomMaxAggregateInputType = {
 export type RoomCountAggregateInputType = {
   id?: true
   name?: true
+  isPrivate?: true
   createdAt?: true
   authorId?: true
   _all?: true
@@ -176,6 +182,7 @@ export type RoomGroupByArgs<ExtArgs extends runtime.Types.Extensions.InternalArg
 export type RoomGroupByOutputType = {
   id: number
   name: string | null
+  isPrivate: boolean
   createdAt: Date
   authorId: string
   _count: RoomCountAggregateOutputType | null
@@ -206,6 +213,7 @@ export type RoomWhereInput = {
   NOT?: Prisma.RoomWhereInput | Prisma.RoomWhereInput[]
   id?: Prisma.IntFilter<"Room"> | number
   name?: Prisma.StringNullableFilter<"Room"> | string | null
+  isPrivate?: Prisma.BoolFilter<"Room"> | boolean
   createdAt?: Prisma.DateTimeFilter<"Room"> | Date | string
   authorId?: Prisma.StringFilter<"Room"> | string
   author?: Prisma.XOR<Prisma.UserScalarRelationFilter, Prisma.UserWhereInput>
@@ -216,6 +224,7 @@ export type RoomWhereInput = {
 export type RoomOrderByWithRelationInput = {
   id?: Prisma.SortOrder
   name?: Prisma.SortOrderInput | Prisma.SortOrder
+  isPrivate?: Prisma.SortOrder
   createdAt?: Prisma.SortOrder
   authorId?: Prisma.SortOrder
   author?: Prisma.UserOrderByWithRelationInput
@@ -229,6 +238,7 @@ export type RoomWhereUniqueInput = Prisma.AtLeast<{
   OR?: Prisma.RoomWhereInput[]
   NOT?: Prisma.RoomWhereInput | Prisma.RoomWhereInput[]
   name?: Prisma.StringNullableFilter<"Room"> | string | null
+  isPrivate?: Prisma.BoolFilter<"Room"> | boolean
   createdAt?: Prisma.DateTimeFilter<"Room"> | Date | string
   authorId?: Prisma.StringFilter<"Room"> | string
   author?: Prisma.XOR<Prisma.UserScalarRelationFilter, Prisma.UserWhereInput>
@@ -239,6 +249,7 @@ export type RoomWhereUniqueInput = Prisma.AtLeast<{
 export type RoomOrderByWithAggregationInput = {
   id?: Prisma.SortOrder
   name?: Prisma.SortOrderInput | Prisma.SortOrder
+  isPrivate?: Prisma.SortOrder
   createdAt?: Prisma.SortOrder
   authorId?: Prisma.SortOrder
   _count?: Prisma.RoomCountOrderByAggregateInput
@@ -254,12 +265,14 @@ export type RoomScalarWhereWithAggregatesInput = {
   NOT?: Prisma.RoomScalarWhereWithAggregatesInput | Prisma.RoomScalarWhereWithAggregatesInput[]
   id?: Prisma.IntWithAggregatesFilter<"Room"> | number
   name?: Prisma.StringNullableWithAggregatesFilter<"Room"> | string | null
+  isPrivate?: Prisma.BoolWithAggregatesFilter<"Room"> | boolean
   createdAt?: Prisma.DateTimeWithAggregatesFilter<"Room"> | Date | string
   authorId?: Prisma.StringWithAggregatesFilter<"Room"> | string
 }
 
 export type RoomCreateInput = {
   name?: string | null
+  isPrivate?: boolean
   createdAt?: Date | string
   author: Prisma.UserCreateNestedOneWithoutOwnedRoomsInput
   participants?: Prisma.RoomParticipantCreateNestedManyWithoutRoomInput
@@ -269,6 +282,7 @@ export type RoomCreateInput = {
 export type RoomUncheckedCreateInput = {
   id?: number
   name?: string | null
+  isPrivate?: boolean
   createdAt?: Date | string
   authorId: string
   participants?: Prisma.RoomParticipantUncheckedCreateNestedManyWithoutRoomInput
@@ -277,6 +291,7 @@ export type RoomUncheckedCreateInput = {
 
 export type RoomUpdateInput = {
   name?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  isPrivate?: Prisma.BoolFieldUpdateOperationsInput | boolean
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   author?: Prisma.UserUpdateOneRequiredWithoutOwnedRoomsNestedInput
   participants?: Prisma.RoomParticipantUpdateManyWithoutRoomNestedInput
@@ -286,6 +301,7 @@ export type RoomUpdateInput = {
 export type RoomUncheckedUpdateInput = {
   id?: Prisma.IntFieldUpdateOperationsInput | number
   name?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  isPrivate?: Prisma.BoolFieldUpdateOperationsInput | boolean
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   authorId?: Prisma.StringFieldUpdateOperationsInput | string
   participants?: Prisma.RoomParticipantUncheckedUpdateManyWithoutRoomNestedInput
@@ -295,18 +311,21 @@ export type RoomUncheckedUpdateInput = {
 export type RoomCreateManyInput = {
   id?: number
   name?: string | null
+  isPrivate?: boolean
   createdAt?: Date | string
   authorId: string
 }
 
 export type RoomUpdateManyMutationInput = {
   name?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  isPrivate?: Prisma.BoolFieldUpdateOperationsInput | boolean
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
 }
 
 export type RoomUncheckedUpdateManyInput = {
   id?: Prisma.IntFieldUpdateOperationsInput | number
   name?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  isPrivate?: Prisma.BoolFieldUpdateOperationsInput | boolean
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   authorId?: Prisma.StringFieldUpdateOperationsInput | string
 }
@@ -329,6 +348,7 @@ export type RoomScalarRelationFilter = {
 export type RoomCountOrderByAggregateInput = {
   id?: Prisma.SortOrder
   name?: Prisma.SortOrder
+  isPrivate?: Prisma.SortOrder
   createdAt?: Prisma.SortOrder
   authorId?: Prisma.SortOrder
 }
@@ -340,6 +360,7 @@ export type RoomAvgOrderByAggregateInput = {
 export type RoomMaxOrderByAggregateInput = {
   id?: Prisma.SortOrder
   name?: Prisma.SortOrder
+  isPrivate?: Prisma.SortOrder
   createdAt?: Prisma.SortOrder
   authorId?: Prisma.SortOrder
 }
@@ -347,6 +368,7 @@ export type RoomMaxOrderByAggregateInput = {
 export type RoomMinOrderByAggregateInput = {
   id?: Prisma.SortOrder
   name?: Prisma.SortOrder
+  isPrivate?: Prisma.SortOrder
   createdAt?: Prisma.SortOrder
   authorId?: Prisma.SortOrder
 }
@@ -415,6 +437,10 @@ export type NullableStringFieldUpdateOperationsInput = {
   set?: string | null
 }
 
+export type BoolFieldUpdateOperationsInput = {
+  set?: boolean
+}
+
 export type RoomCreateNestedOneWithoutParticipantsInput = {
   create?: Prisma.XOR<Prisma.RoomCreateWithoutParticipantsInput, Prisma.RoomUncheckedCreateWithoutParticipantsInput>
   connectOrCreate?: Prisma.RoomCreateOrConnectWithoutParticipantsInput
@@ -431,6 +457,7 @@ export type RoomUpdateOneRequiredWithoutParticipantsNestedInput = {
 
 export type RoomCreateWithoutAuthorInput = {
   name?: string | null
+  isPrivate?: boolean
   createdAt?: Date | string
   participants?: Prisma.RoomParticipantCreateNestedManyWithoutRoomInput
   messages?: Prisma.MessageCreateNestedManyWithoutRoomInput
@@ -439,6 +466,7 @@ export type RoomCreateWithoutAuthorInput = {
 export type RoomUncheckedCreateWithoutAuthorInput = {
   id?: number
   name?: string | null
+  isPrivate?: boolean
   createdAt?: Date | string
   participants?: Prisma.RoomParticipantUncheckedCreateNestedManyWithoutRoomInput
   messages?: Prisma.MessageUncheckedCreateNestedManyWithoutRoomInput
@@ -476,12 +504,14 @@ export type RoomScalarWhereInput = {
   NOT?: Prisma.RoomScalarWhereInput | Prisma.RoomScalarWhereInput[]
   id?: Prisma.IntFilter<"Room"> | number
   name?: Prisma.StringNullableFilter<"Room"> | string | null
+  isPrivate?: Prisma.BoolFilter<"Room"> | boolean
   createdAt?: Prisma.DateTimeFilter<"Room"> | Date | string
   authorId?: Prisma.StringFilter<"Room"> | string
 }
 
 export type RoomCreateWithoutMessagesInput = {
   name?: string | null
+  isPrivate?: boolean
   createdAt?: Date | string
   author: Prisma.UserCreateNestedOneWithoutOwnedRoomsInput
   participants?: Prisma.RoomParticipantCreateNestedManyWithoutRoomInput
@@ -490,6 +520,7 @@ export type RoomCreateWithoutMessagesInput = {
 export type RoomUncheckedCreateWithoutMessagesInput = {
   id?: number
   name?: string | null
+  isPrivate?: boolean
   createdAt?: Date | string
   authorId: string
   participants?: Prisma.RoomParticipantUncheckedCreateNestedManyWithoutRoomInput
@@ -513,6 +544,7 @@ export type RoomUpdateToOneWithWhereWithoutMessagesInput = {
 
 export type RoomUpdateWithoutMessagesInput = {
   name?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  isPrivate?: Prisma.BoolFieldUpdateOperationsInput | boolean
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   author?: Prisma.UserUpdateOneRequiredWithoutOwnedRoomsNestedInput
   participants?: Prisma.RoomParticipantUpdateManyWithoutRoomNestedInput
@@ -521,6 +553,7 @@ export type RoomUpdateWithoutMessagesInput = {
 export type RoomUncheckedUpdateWithoutMessagesInput = {
   id?: Prisma.IntFieldUpdateOperationsInput | number
   name?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  isPrivate?: Prisma.BoolFieldUpdateOperationsInput | boolean
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   authorId?: Prisma.StringFieldUpdateOperationsInput | string
   participants?: Prisma.RoomParticipantUncheckedUpdateManyWithoutRoomNestedInput
@@ -528,6 +561,7 @@ export type RoomUncheckedUpdateWithoutMessagesInput = {
 
 export type RoomCreateWithoutParticipantsInput = {
   name?: string | null
+  isPrivate?: boolean
   createdAt?: Date | string
   author: Prisma.UserCreateNestedOneWithoutOwnedRoomsInput
   messages?: Prisma.MessageCreateNestedManyWithoutRoomInput
@@ -536,6 +570,7 @@ export type RoomCreateWithoutParticipantsInput = {
 export type RoomUncheckedCreateWithoutParticipantsInput = {
   id?: number
   name?: string | null
+  isPrivate?: boolean
   createdAt?: Date | string
   authorId: string
   messages?: Prisma.MessageUncheckedCreateNestedManyWithoutRoomInput
@@ -559,6 +594,7 @@ export type RoomUpdateToOneWithWhereWithoutParticipantsInput = {
 
 export type RoomUpdateWithoutParticipantsInput = {
   name?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  isPrivate?: Prisma.BoolFieldUpdateOperationsInput | boolean
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   author?: Prisma.UserUpdateOneRequiredWithoutOwnedRoomsNestedInput
   messages?: Prisma.MessageUpdateManyWithoutRoomNestedInput
@@ -567,6 +603,7 @@ export type RoomUpdateWithoutParticipantsInput = {
 export type RoomUncheckedUpdateWithoutParticipantsInput = {
   id?: Prisma.IntFieldUpdateOperationsInput | number
   name?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  isPrivate?: Prisma.BoolFieldUpdateOperationsInput | boolean
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   authorId?: Prisma.StringFieldUpdateOperationsInput | string
   messages?: Prisma.MessageUncheckedUpdateManyWithoutRoomNestedInput
@@ -575,11 +612,13 @@ export type RoomUncheckedUpdateWithoutParticipantsInput = {
 export type RoomCreateManyAuthorInput = {
   id?: number
   name?: string | null
+  isPrivate?: boolean
   createdAt?: Date | string
 }
 
 export type RoomUpdateWithoutAuthorInput = {
   name?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  isPrivate?: Prisma.BoolFieldUpdateOperationsInput | boolean
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   participants?: Prisma.RoomParticipantUpdateManyWithoutRoomNestedInput
   messages?: Prisma.MessageUpdateManyWithoutRoomNestedInput
@@ -588,6 +627,7 @@ export type RoomUpdateWithoutAuthorInput = {
 export type RoomUncheckedUpdateWithoutAuthorInput = {
   id?: Prisma.IntFieldUpdateOperationsInput | number
   name?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  isPrivate?: Prisma.BoolFieldUpdateOperationsInput | boolean
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   participants?: Prisma.RoomParticipantUncheckedUpdateManyWithoutRoomNestedInput
   messages?: Prisma.MessageUncheckedUpdateManyWithoutRoomNestedInput
@@ -596,6 +636,7 @@ export type RoomUncheckedUpdateWithoutAuthorInput = {
 export type RoomUncheckedUpdateManyWithoutAuthorInput = {
   id?: Prisma.IntFieldUpdateOperationsInput | number
   name?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  isPrivate?: Prisma.BoolFieldUpdateOperationsInput | boolean
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
 }
 
@@ -642,6 +683,7 @@ export type RoomCountOutputTypeCountMessagesArgs<ExtArgs extends runtime.Types.E
 export type RoomSelect<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetSelect<{
   id?: boolean
   name?: boolean
+  isPrivate?: boolean
   createdAt?: boolean
   authorId?: boolean
   author?: boolean | Prisma.UserDefaultArgs<ExtArgs>
@@ -653,6 +695,7 @@ export type RoomSelect<ExtArgs extends runtime.Types.Extensions.InternalArgs = r
 export type RoomSelectCreateManyAndReturn<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetSelect<{
   id?: boolean
   name?: boolean
+  isPrivate?: boolean
   createdAt?: boolean
   authorId?: boolean
   author?: boolean | Prisma.UserDefaultArgs<ExtArgs>
@@ -661,6 +704,7 @@ export type RoomSelectCreateManyAndReturn<ExtArgs extends runtime.Types.Extensio
 export type RoomSelectUpdateManyAndReturn<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetSelect<{
   id?: boolean
   name?: boolean
+  isPrivate?: boolean
   createdAt?: boolean
   authorId?: boolean
   author?: boolean | Prisma.UserDefaultArgs<ExtArgs>
@@ -669,11 +713,12 @@ export type RoomSelectUpdateManyAndReturn<ExtArgs extends runtime.Types.Extensio
 export type RoomSelectScalar = {
   id?: boolean
   name?: boolean
+  isPrivate?: boolean
   createdAt?: boolean
   authorId?: boolean
 }
 
-export type RoomOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "name" | "createdAt" | "authorId", ExtArgs["result"]["room"]>
+export type RoomOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "name" | "isPrivate" | "createdAt" | "authorId", ExtArgs["result"]["room"]>
 export type RoomInclude<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
   author?: boolean | Prisma.UserDefaultArgs<ExtArgs>
   participants?: boolean | Prisma.Room$participantsArgs<ExtArgs>
@@ -697,6 +742,7 @@ export type $RoomPayload<ExtArgs extends runtime.Types.Extensions.InternalArgs =
   scalars: runtime.Types.Extensions.GetPayloadResult<{
     id: number
     name: string | null
+    isPrivate: boolean
     createdAt: Date
     authorId: string
   }, ExtArgs["result"]["room"]>
@@ -1127,6 +1173,7 @@ export interface Prisma__RoomClient<T, Null = never, ExtArgs extends runtime.Typ
 export interface RoomFieldRefs {
   readonly id: Prisma.FieldRef<"Room", 'Int'>
   readonly name: Prisma.FieldRef<"Room", 'String'>
+  readonly isPrivate: Prisma.FieldRef<"Room", 'Boolean'>
   readonly createdAt: Prisma.FieldRef<"Room", 'DateTime'>
   readonly authorId: Prisma.FieldRef<"Room", 'String'>
 }

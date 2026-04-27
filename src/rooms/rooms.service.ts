@@ -5,11 +5,12 @@ import { PrismaService } from "../prisma.service.js";
 export class RoomsService {
   constructor(private prisma: PrismaService) {}
 
-  async createRoom(name: string, authorId: string) {
+  async createRoom(name: string, authorId: string, isPrivate: boolean = false) {
     return this.prisma.room.create({
       data: {
         name,
         authorId,
+        isPrivate,
         participants: {
           create: {
             userId: authorId,
@@ -36,8 +37,15 @@ export class RoomsService {
   async ensureParticipant(
     roomId: number,
     userId: string,
-    canSeeHistory: boolean = true,
+    canSeeHistory?: boolean,
   ) {
+    const updateData =
+      typeof canSeeHistory === "boolean"
+        ? {
+            canSeeHistory,
+          }
+        : {};
+
     return this.prisma.roomParticipant.upsert({
       where: {
         userId_roomId: {
@@ -45,13 +53,26 @@ export class RoomsService {
           roomId,
         },
       },
-      update: {
-        canSeeHistory,
-      },
+      update: updateData,
       create: {
         roomId,
         userId,
-        canSeeHistory,
+        canSeeHistory: canSeeHistory ?? true,
+      },
+    });
+  }
+
+  async inviteParticipant(roomId: number, userId: string, canSeeHistory: boolean) {
+    return this.ensureParticipant(roomId, userId, canSeeHistory);
+  }
+
+  async findParticipant(roomId: number, userId: string) {
+    return this.prisma.roomParticipant.findUnique({
+      where: {
+        userId_roomId: {
+          roomId,
+          userId,
+        },
       },
     });
   }
@@ -72,8 +93,18 @@ export class RoomsService {
     });
   }
 
-  async findAllRooms() {
+  async findVisibleRooms(userId: string) {
     return this.prisma.room.findMany({
+      where: {
+        OR: [
+          { isPrivate: false },
+          {
+            participants: {
+              some: { userId },
+            },
+          },
+        ],
+      },
       include: {
         author: true,
         participants: true,
@@ -81,6 +112,13 @@ export class RoomsService {
       orderBy: {
         createdAt: "desc",
       },
+    });
+  }
+
+  async findById(roomId: number) {
+    return this.prisma.room.findUnique({
+      where: { id: roomId },
+      include: { participants: true },
     });
   }
 }

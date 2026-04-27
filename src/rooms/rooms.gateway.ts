@@ -1,12 +1,17 @@
 import {
+  BadRequestException,
+  ForbiddenException,
+} from "@nestjs/common";
+import {
+  ConnectedSocket,
+  MessageBody,
   SubscribeMessage,
   WebSocketGateway,
   WebSocketServer,
-  MessageBody,
-  ConnectedSocket,
 } from "@nestjs/websockets";
 import { Server, Socket } from "socket.io";
 import { RoomsService } from "./rooms.service.js";
+import { UsersService } from "../users/users.service.js";
 
 @WebSocketGateway({
   cors: { origin: "*" },
@@ -16,14 +21,21 @@ export class RoomsGateway {
   server!: Server;
   private typingByRoom = new Map<number, Set<string>>();
 
-  constructor(private readonly roomsService: RoomsService) {}
+  constructor(
+    private readonly roomsService: RoomsService,
+    private readonly usersService: UsersService,
+  ) {}
 
   @SubscribeMessage("createRoom")
   async handleCreateRoom(
-    @MessageBody() data: { name: string; authorId: string },
+    @MessageBody() data: { name: string; authorId: string; isPrivate?: boolean },
     @ConnectedSocket() client: Socket,
   ) {
-    const room = await this.roomsService.createRoom(data.name, data.authorId);
+    const room = await this.roomsService.createRoom(
+      data.name,
+      data.authorId,
+      Boolean(data.isPrivate),
+    );
     client.join(`room_${room.id}`); // L'auteur rejoint le canal socket
     return room;
   }
@@ -33,7 +45,23 @@ export class RoomsGateway {
     @MessageBody() data: { roomId: number; userId: string },
     @ConnectedSocket() client: Socket,
   ) {
-    await this.roomsService.ensureParticipant(data.roomId, data.userId, true);
+    const room = await this.roomsService.findById(data.roomId);
+    if (!room) {
+      throw new BadRequestException("Room not found");
+    }
+
+    const isParticipant = room.participants.some(
+      (participant) => participant.userId === data.userId,
+    );
+
+    if (room.isPrivate && !isParticipant) {
+      throw new ForbiddenException("Private room access denied");
+    }
+
+    if (!room.isPrivate && !isParticipant) {
+      await this.roomsService.ensureParticipant(data.roomId, data.userId);
+    }
+
     client.join(`room_${data.roomId}`);
     client.emit("typingSnapshot", {
       roomId: data.roomId,
@@ -43,9 +71,30 @@ export class RoomsGateway {
   }
 
   @SubscribeMessage("listRooms")
-  async handleListRooms() {
-    const rooms = await this.roomsService.findAllRooms();
+  async handleListRooms(@MessageBody() data: { userId: string }) {
+    const rooms = await this.roomsService.findVisibleRooms(data.userId);
     return rooms;
+  }
+
+  @SubscribeMessage("inviteToRoom")
+  async handleInviteToRoom(
+    @MessageBody() data: { roomId: number; username: string; canSeeHistory: boolean },
+  ) {
+    const username = data.username.trim();
+    if (!username) {
+      throw new BadRequestException("Username is required");
+    }
+
+    const targetUser = await this.usersService.findOneByUsername(username);
+    if (!targetUser) {
+      throw new BadRequestException("User not found");
+    }
+
+    return this.roomsService.inviteParticipant(
+      data.roomId,
+      targetUser.id,
+      data.canSeeHistory,
+    );
   }
 
   // Gestion du "En train d'écrire" (Requirement TP)
