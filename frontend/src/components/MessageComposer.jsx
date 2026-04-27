@@ -1,6 +1,6 @@
 import { useState } from "react";
 
-export default function MessageComposer({ disabled, onSend }) {
+export default function MessageComposer({ disabled, onSend, onTypingChange }) {
   const [draft, setDraft] = useState("");
 
   async function handleSubmit(event) {
@@ -8,6 +8,9 @@ export default function MessageComposer({ disabled, onSend }) {
     const content = draft.trim();
     if (!content || !onSend) {
       return;
+    }
+    if (onTypingChange) {
+      onTypingChange(false);
     }
     await onSend(content);
     setDraft("");
@@ -20,7 +23,13 @@ export default function MessageComposer({ disabled, onSend }) {
           className="form-control"
           placeholder={disabled ? "Join a room to write" : "Write a message"}
           value={draft}
-          onChange={(event) => setDraft(event.target.value)}
+          onChange={(event) => {
+            const value = event.target.value;
+            setDraft(value);
+            if (onTypingChange) {
+              onTypingChange(Boolean(value.trim()));
+            }
+          }}
           disabled={disabled}
         />
         <button className="btn btn-primary" type="submit" disabled={disabled}>

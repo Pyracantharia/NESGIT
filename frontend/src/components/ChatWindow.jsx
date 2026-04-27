@@ -1,6 +1,14 @@
 import MessageComposer from "./MessageComposer.jsx";
+import TypingIndicator from "./TypingIndicator.jsx";
 
-export default function ChatWindow({ activeRoom, messages, loadingMessages, onSend }) {
+export default function ChatWindow({
+  activeRoom,
+  messages,
+  loadingMessages,
+  typingText,
+  onSend,
+  onTypingChange,
+}) {
   function formatTime(value) {
     if (!value) return "";
     try {
@@ -45,7 +53,8 @@ export default function ChatWindow({ activeRoom, messages, loadingMessages, onSe
           <div className="text-muted">Use the left panel to create or join a room.</div>
         )}
       </div>
-      <MessageComposer disabled={!activeRoom} onSend={onSend} />
+      <TypingIndicator text={typingText} />
+      <MessageComposer disabled={!activeRoom} onSend={onSend} onTypingChange={onTypingChange} />
     </div>
   );
 }

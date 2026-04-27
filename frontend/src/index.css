@@ -86,3 +86,7 @@ body {
   background-color: #1f2937;
   color: #e2e8f0;
 }
+
+.typing-placeholder {
+  visibility: hidden;
+}

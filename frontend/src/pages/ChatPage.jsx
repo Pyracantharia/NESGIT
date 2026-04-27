@@ -1,13 +1,13 @@
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import AppNavbar from "../components/AppNavbar.jsx";
 import RoomList from "../components/RoomList.jsx";
 import ChatWindow from "../components/ChatWindow.jsx";
 import { createSocket, emitWithAck } from "../lib/socket.js";
 import { useAuth } from "../context/AuthContext.jsx";
+import useTypingIndicator from "../hooks/useTypingIndicator.js";
 
 export default function ChatPage() {
   const { userClaims } = useAuth();
-  const [socket, setSocket] = useState(null);
   const [isConnected, setIsConnected] = useState(false);
   const [rooms, setRooms] = useState([]);
   const [activeRoomId, setActiveRoomId] = useState(null);
@@ -15,20 +15,32 @@ export default function ChatPage() {
   const [loadingRooms, setLoadingRooms] = useState(false);
   const [loadingMessages, setLoadingMessages] = useState(false);
   const [error, setError] = useState("");
+  const socketRef = useRef(null);
+  const currentUsername = userClaims?.email ?? "User";
 
   const activeRoom = useMemo(
     () => rooms.find((room) => Number(room.id) === Number(activeRoomId)) ?? null,
     [rooms, activeRoomId],
   );
   const activeMessages = activeRoomId ? messagesByRoom[activeRoomId] || [] : [];
+  const { typingText, onTypingEvent, clearTypingForUsername } = useTypingIndicator(
+    activeRoomId,
+    currentUsername,
+  );
+  const onTypingEventRef = useRef(onTypingEvent);
+
+  useEffect(() => {
+    onTypingEventRef.current = onTypingEvent;
+  }, [onTypingEvent]);
 
   useEffect(() => {
     const socketInstance = createSocket();
-    setSocket(socketInstance);
+    socketRef.current = socketInstance;
 
     socketInstance.on("connect", () => {
       setError("");
       setIsConnected(true);
+      refreshRooms(socketInstance);
     });
 
     socketInstance.on("connect_error", () => {
@@ -46,25 +58,24 @@ export default function ChatPage() {
         ...prev,
         [roomId]: [...(prev[roomId] || []), message],
       }));
+      const authorName = message.user?.username || message.user?.email;
+      clearTypingForUsername(authorName);
     });
+
+    socketInstance.on("userTyping", (event) => onTypingEventRef.current(event));
 
     return () => {
       socketInstance.disconnect();
-      setSocket(null);
+      socketRef.current = null;
     };
   }, []);
 
-  useEffect(() => {
-    if (isConnected) {
-      refreshRooms();
-    }
-  }, [isConnected]);
-
-  async function refreshRooms() {
-    if (!socket) return;
+  async function refreshRooms(sourceSocket) {
+    const currentSocket = sourceSocket ?? socketRef.current;
+    if (!currentSocket || !currentSocket.connected) return;
     setLoadingRooms(true);
     try {
-      const result = await emitWithAck(socket, "listRooms", {});
+      const result = await emitWithAck(currentSocket, "listRooms", {});
       setRooms(Array.isArray(result) ? result : []);
     } catch (err) {
       setError(err.message);
@@ -74,9 +85,10 @@ export default function ChatPage() {
   }
 
   async function createRoom(name) {
-    if (!socket || !userClaims?.sub) return;
+    const currentSocket = socketRef.current;
+    if (!currentSocket || !currentSocket.connected || !userClaims?.sub) return;
     try {
-      const room = await emitWithAck(socket, "createRoom", {
+      const room = await emitWithAck(currentSocket, "createRoom", {
         name,
         authorId: userClaims.sub,
       });
@@ -88,15 +100,16 @@ export default function ChatPage() {
   }
 
   async function joinRoom(roomId) {
-    if (!socket || !userClaims?.sub) return;
+    const currentSocket = socketRef.current;
+    if (!currentSocket || !currentSocket.connected || !userClaims?.sub) return;
     try {
       setLoadingMessages(true);
-      await emitWithAck(socket, "joinRoom", {
+      await emitWithAck(currentSocket, "joinRoom", {
         roomId,
         userId: userClaims.sub,
       });
       setActiveRoomId(roomId);
-      const history = await emitWithAck(socket, "findMessagesByRoom", { roomId });
+      const history = await emitWithAck(currentSocket, "findMessagesByRoom", { roomId });
       setMessagesByRoom((prev) => ({ ...prev, [roomId]: Array.isArray(history) ? history : [] }));
     } catch (err) {
       setError(err.message);
@@ -106,9 +119,10 @@ export default function ChatPage() {
   }
 
   async function sendMessage(content) {
-    if (!socket || !userClaims?.sub || !activeRoomId) return;
+    const currentSocket = socketRef.current;
+    if (!currentSocket || !currentSocket.connected || !userClaims?.sub || !activeRoomId) return;
     try {
-      await emitWithAck(socket, "sendMessage", {
+      await emitWithAck(currentSocket, "sendMessage", {
         content,
         userId: userClaims.sub,
         roomId: activeRoomId,
@@ -116,6 +130,17 @@ export default function ChatPage() {
     } catch (err) {
       setError(err.message);
     }
+  }
+
+  function setTyping(isTyping) {
+    const currentSocket = socketRef.current;
+    if (!currentSocket || !currentSocket.connected || !activeRoomId) return;
+
+    currentSocket.emit("typing", {
+      roomId: activeRoomId,
+      username: currentUsername,
+      isTyping,
+    });
   }
 
   return (
@@ -131,7 +156,7 @@ export default function ChatPage() {
               onRefresh={refreshRooms}
               onCreate={createRoom}
               onJoin={joinRoom}
-              loading={loadingRooms}
+              loading={loadingRooms || !isConnected}
             />
           </div>
           <div className="col-12 col-lg-8">
@@ -139,7 +164,9 @@ export default function ChatPage() {
               activeRoom={activeRoom}
               messages={activeMessages}
               loadingMessages={loadingMessages}
+              typingText={typingText}
               onSend={sendMessage}
+              onTypingChange={setTyping}
             />
           </div>
         </div>
