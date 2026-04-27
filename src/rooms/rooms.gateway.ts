@@ -14,6 +14,7 @@ import { RoomsService } from "./rooms.service.js";
 export class RoomsGateway {
   @WebSocketServer()
   server!: Server;
+  private typingByRoom = new Map<number, Set<string>>();
 
   constructor(private readonly roomsService: RoomsService) {}
 
@@ -34,6 +35,10 @@ export class RoomsGateway {
   ) {
     await this.roomsService.ensureParticipant(data.roomId, data.userId, true);
     client.join(`room_${data.roomId}`);
+    client.emit("typingSnapshot", {
+      roomId: data.roomId,
+      users: Array.from(this.typingByRoom.get(data.roomId) ?? []),
+    });
     return { status: "joined", roomId: data.roomId };
   }
 
@@ -50,6 +55,19 @@ export class RoomsGateway {
     data: { roomId: number; username: string; isTyping: boolean },
     @ConnectedSocket() client: Socket,
   ) {
+    const currentSet = this.typingByRoom.get(data.roomId) ?? new Set<string>();
+    if (data.isTyping) {
+      currentSet.add(data.username);
+    } else {
+      currentSet.delete(data.username);
+    }
+
+    if (currentSet.size === 0) {
+      this.typingByRoom.delete(data.roomId);
+    } else {
+      this.typingByRoom.set(data.roomId, currentSet);
+    }
+
     // On diffuse à tout le monde dans le salon SAUF à celui qui écrit
     client.to(`room_${data.roomId}`).emit("userTyping", {
       username: data.username,

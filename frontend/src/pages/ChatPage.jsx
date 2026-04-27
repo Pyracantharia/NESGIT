@@ -7,7 +7,7 @@ import { useAuth } from "../context/AuthContext.jsx";
 import useTypingIndicator from "../hooks/useTypingIndicator.js";
 
 export default function ChatPage() {
-  const { userClaims } = useAuth();
+  const { userClaims, userProfile } = useAuth();
   const [isConnected, setIsConnected] = useState(false);
   const [rooms, setRooms] = useState([]);
   const [activeRoomId, setActiveRoomId] = useState(null);
@@ -16,22 +16,34 @@ export default function ChatPage() {
   const [loadingMessages, setLoadingMessages] = useState(false);
   const [error, setError] = useState("");
   const socketRef = useRef(null);
-  const currentUsername = userClaims?.email ?? "User";
+  const initialRoomsRetryRef = useRef(null);
+  const currentUsername = userProfile?.username || userClaims?.email || "User";
 
   const activeRoom = useMemo(
     () => rooms.find((room) => Number(room.id) === Number(activeRoomId)) ?? null,
     [rooms, activeRoomId],
   );
   const activeMessages = activeRoomId ? messagesByRoom[activeRoomId] || [] : [];
-  const { typingText, onTypingEvent, clearTypingForUsername } = useTypingIndicator(
+  const { typingText, onTypingEvent, clearTypingForUsername, applyTypingSnapshot } =
+    useTypingIndicator(
     activeRoomId,
     currentUsername,
-  );
+    );
   const onTypingEventRef = useRef(onTypingEvent);
+  const typingSnapshotRef = useRef(applyTypingSnapshot);
+  const activeRoomIdRef = useRef(activeRoomId);
 
   useEffect(() => {
     onTypingEventRef.current = onTypingEvent;
   }, [onTypingEvent]);
+
+  useEffect(() => {
+    typingSnapshotRef.current = applyTypingSnapshot;
+  }, [applyTypingSnapshot]);
+
+  useEffect(() => {
+    activeRoomIdRef.current = activeRoomId;
+  }, [activeRoomId]);
 
   useEffect(() => {
     const socketInstance = createSocket();
@@ -40,7 +52,7 @@ export default function ChatPage() {
     socketInstance.on("connect", () => {
       setError("");
       setIsConnected(true);
-      refreshRooms(socketInstance);
+      refreshRoomsWithRetry(socketInstance);
     });
 
     socketInstance.on("connect_error", () => {
@@ -63,8 +75,15 @@ export default function ChatPage() {
     });
 
     socketInstance.on("userTyping", (event) => onTypingEventRef.current(event));
+    socketInstance.on("typingSnapshot", (payload) => {
+      if (!payload || Number(payload.roomId) !== Number(activeRoomIdRef.current)) return;
+      typingSnapshotRef.current(payload.users);
+    });
 
     return () => {
+      if (initialRoomsRetryRef.current) {
+        clearTimeout(initialRoomsRetryRef.current);
+      }
       socketInstance.disconnect();
       socketRef.current = null;
     };
@@ -72,16 +91,36 @@ export default function ChatPage() {
 
   async function refreshRooms(sourceSocket) {
     const currentSocket = sourceSocket ?? socketRef.current;
-    if (!currentSocket || !currentSocket.connected) return;
+    if (!currentSocket || !currentSocket.connected) return false;
     setLoadingRooms(true);
     try {
       const result = await emitWithAck(currentSocket, "listRooms", {});
       setRooms(Array.isArray(result) ? result : []);
+      setError("");
+      return true;
     } catch (err) {
       setError(err.message);
+      return false;
     } finally {
       setLoadingRooms(false);
     }
+  }
+
+  async function refreshRoomsWithRetry(sourceSocket, remainingAttempts = 4) {
+    const ok = await refreshRooms(sourceSocket);
+    if (ok) return;
+
+    if (remainingAttempts <= 1) return;
+
+    if (initialRoomsRetryRef.current) {
+      clearTimeout(initialRoomsRetryRef.current);
+    }
+
+    initialRoomsRetryRef.current = setTimeout(() => {
+      const currentSocket = sourceSocket ?? socketRef.current;
+      if (!currentSocket || !currentSocket.connected) return;
+      refreshRoomsWithRetry(currentSocket, remainingAttempts - 1);
+    }, 1000);
   }
 
   async function createRoom(name) {
@@ -153,7 +192,7 @@ export default function ChatPage() {
             <RoomList
               rooms={rooms}
               activeRoomId={activeRoomId}
-              onRefresh={refreshRooms}
+              onRefresh={() => refreshRooms()}
               onCreate={createRoom}
               onJoin={joinRoom}
               loading={loadingRooms || !isConnected}

@@ -5,6 +5,10 @@ const WS_URL = import.meta.env.VITE_WS_URL ?? "http://localhost:3000";
 export function createSocket() {
   return io(WS_URL, {
     transports: ["websocket"],
+    reconnection: true,
+    reconnectionAttempts: Infinity,
+    reconnectionDelay: 500,
+    reconnectionDelayMax: 3000,
   });
 }
 

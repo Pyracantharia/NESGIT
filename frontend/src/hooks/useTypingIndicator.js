@@ -58,6 +58,20 @@ export default function useTypingIndicator(activeRoomId, currentUsername) {
     });
   }
 
+  function applyTypingSnapshot(users) {
+    if (!Array.isArray(users)) {
+      setTypingUsers({});
+      return;
+    }
+
+    const next = {};
+    for (const username of users) {
+      if (!username || username === currentUsername) continue;
+      next[username] = true;
+    }
+    setTypingUsers(next);
+  }
+
   const typingText = useMemo(() => {
     const names = Object.keys(typingUsers);
     if (names.length === 0) return "";
@@ -66,5 +80,5 @@ export default function useTypingIndicator(activeRoomId, currentUsername) {
     return `${names[0]}, ${names[1]} et ${names.length - 2} autres sont en train d'ecrire`;
   }, [typingUsers]);
 
-  return { typingText, onTypingEvent, clearTypingForUsername };
+  return { typingText, onTypingEvent, clearTypingForUsername, applyTypingSnapshot };
 }

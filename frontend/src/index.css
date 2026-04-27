@@ -9,6 +9,14 @@ body {
   min-height: 100vh;
 }
 
+a {
+  color: #cbd5e1;
+}
+
+a:hover {
+  color: #f8fafc;
+}
+
 :root {
   --bs-body-bg: #0f172a;
   --bs-body-color: #e2e8f0;
@@ -89,4 +97,17 @@ body {
 
 .typing-placeholder {
   visibility: hidden;
+}
+
+.navbar .nav-link {
+  color: #cbd5e1 !important;
+}
+
+.navbar .nav-link:hover,
+.navbar .nav-link:focus {
+  color: #f8fafc !important;
+}
+
+.navbar .navbar-brand {
+  color: #f8fafc !important;
 }

@@ -1,5 +1,12 @@
 const API_BASE_URL = import.meta.env.VITE_API_URL ?? "http://localhost:3000";
 
+function authHeaders(token, withJson = false) {
+  const headers = {};
+  if (withJson) headers["Content-Type"] = "application/json";
+  if (token) headers.Authorization = `Bearer ${token}`;
+  return headers;
+}
+
 async function request(path, options = {}) {
   const response = await fetch(`${API_BASE_URL}${path}`, options);
   const text = await response.text();
@@ -30,6 +37,21 @@ export async function register(payload) {
   return request("/auth/register", {
     method: "POST",
     headers: { "Content-Type": "application/json" },
+    body: JSON.stringify(payload),
+  });
+}
+
+export async function getUserById(id, token) {
+  return request(`/user/${id}`, {
+    method: "GET",
+    headers: authHeaders(token),
+  });
+}
+
+export async function updateMe(payload, token) {
+  return request("/user/me", {
+    method: "PATCH",
+    headers: authHeaders(token, true),
     body: JSON.stringify(payload),
   });
 }

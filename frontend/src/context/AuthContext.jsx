@@ -1,5 +1,5 @@
-import { createContext, useContext, useMemo, useState } from "react";
-import { login, register } from "../lib/api.js";
+import { createContext, useContext, useEffect, useMemo, useState } from "react";
+import { getUserById, login, register, updateMe } from "../lib/api.js";
 
 const TOKEN_KEY = "neschat_token";
 const AuthContext = createContext(null);
@@ -31,6 +31,30 @@ export function AuthProvider({ children }) {
       return null;
     }
   });
+  const [userProfile, setUserProfile] = useState(null);
+
+  useEffect(() => {
+    let cancelled = false;
+
+    async function loadProfile() {
+      if (!token || !userClaims?.sub) {
+        setUserProfile(null);
+        return;
+      }
+
+      try {
+        const profile = await getUserById(userClaims.sub, token);
+        if (!cancelled) setUserProfile(profile);
+      } catch {
+        if (!cancelled) setUserProfile(null);
+      }
+    }
+
+    loadProfile();
+    return () => {
+      cancelled = true;
+    };
+  }, [token, userClaims?.sub]);
 
   async function loginUser(email, password) {
     const data = await login(email, password);
@@ -50,17 +74,27 @@ export function AuthProvider({ children }) {
     localStorage.removeItem(TOKEN_KEY);
     setToken(null);
     setUserClaims(null);
+    setUserProfile(null);
+  }
+
+  async function updateProfile(payload) {
+    if (!token) throw new Error("Not authenticated");
+    const updated = await updateMe(payload, token);
+    setUserProfile(updated);
+    return updated;
   }
 
   const value = useMemo(
     () => ({
       token,
       userClaims,
+      userProfile,
       loginUser,
       registerUser,
+      updateProfile,
       logout,
     }),
-    [token, userClaims],
+    [token, userClaims, userProfile],
   );
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;
