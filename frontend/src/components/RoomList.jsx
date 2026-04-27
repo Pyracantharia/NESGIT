@@ -1,6 +1,6 @@
 import { useState } from "react";
 
-export default function RoomList({ rooms, activeRoomId, onRefresh, onCreate, onJoin }) {
+export default function RoomList({ rooms, activeRoomId, onRefresh, onCreate, onJoin, loading }) {
   const [newRoomName, setNewRoomName] = useState("");
   const [joinRoomId, setJoinRoomId] = useState("");
 
@@ -25,8 +25,13 @@ export default function RoomList({ rooms, activeRoomId, onRefresh, onCreate, onJ
       <div className="card-body">
         <div className="d-flex justify-content-between align-items-center mb-3">
           <h2 className="h6 mb-0">Rooms</h2>
-          <button type="button" className="btn btn-outline-secondary btn-sm" onClick={onRefresh}>
-            Refresh
+          <button
+            type="button"
+            className="btn btn-outline-secondary btn-sm"
+            onClick={onRefresh}
+            disabled={loading}
+          >
+            {loading ? "Loading..." : "Refresh"}
           </button>
         </div>
 

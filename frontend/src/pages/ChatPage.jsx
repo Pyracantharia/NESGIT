@@ -8,9 +8,12 @@ import { useAuth } from "../context/AuthContext.jsx";
 export default function ChatPage() {
   const { userClaims } = useAuth();
   const [socket, setSocket] = useState(null);
+  const [isConnected, setIsConnected] = useState(false);
   const [rooms, setRooms] = useState([]);
   const [activeRoomId, setActiveRoomId] = useState(null);
   const [messagesByRoom, setMessagesByRoom] = useState({});
+  const [loadingRooms, setLoadingRooms] = useState(false);
+  const [loadingMessages, setLoadingMessages] = useState(false);
   const [error, setError] = useState("");
 
   const activeRoom = useMemo(
@@ -25,10 +28,16 @@ export default function ChatPage() {
 
     socketInstance.on("connect", () => {
       setError("");
+      setIsConnected(true);
     });
 
     socketInstance.on("connect_error", () => {
       setError("Unable to connect to websocket server.");
+      setIsConnected(false);
+    });
+
+    socketInstance.on("disconnect", () => {
+      setIsConnected(false);
     });
 
     socketInstance.on("newMessage", (message) => {
@@ -45,13 +54,22 @@ export default function ChatPage() {
     };
   }, []);
 
+  useEffect(() => {
+    if (isConnected) {
+      refreshRooms();
+    }
+  }, [isConnected]);
+
   async function refreshRooms() {
     if (!socket) return;
+    setLoadingRooms(true);
     try {
       const result = await emitWithAck(socket, "listRooms", {});
       setRooms(Array.isArray(result) ? result : []);
     } catch (err) {
       setError(err.message);
+    } finally {
+      setLoadingRooms(false);
     }
   }
 
@@ -72,6 +90,7 @@ export default function ChatPage() {
   async function joinRoom(roomId) {
     if (!socket || !userClaims?.sub) return;
     try {
+      setLoadingMessages(true);
       await emitWithAck(socket, "joinRoom", {
         roomId,
         userId: userClaims.sub,
@@ -81,6 +100,8 @@ export default function ChatPage() {
       setMessagesByRoom((prev) => ({ ...prev, [roomId]: Array.isArray(history) ? history : [] }));
     } catch (err) {
       setError(err.message);
+    } finally {
+      setLoadingMessages(false);
     }
   }
 
@@ -110,10 +131,16 @@ export default function ChatPage() {
               onRefresh={refreshRooms}
               onCreate={createRoom}
               onJoin={joinRoom}
+              loading={loadingRooms}
             />
           </div>
           <div className="col-12 col-lg-8">
-            <ChatWindow activeRoom={activeRoom} messages={activeMessages} onSend={sendMessage} />
+            <ChatWindow
+              activeRoom={activeRoom}
+              messages={activeMessages}
+              loadingMessages={loadingMessages}
+              onSend={sendMessage}
+            />
           </div>
         </div>
       </main>
